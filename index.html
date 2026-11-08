@@ -1,0 +1,357 @@
+<!doctype html>
+<!--
+ ╔══════════════════════════════════════════════════════════════╗
+ ║  這份檔案的結構（由上到下）                                  ║
+ ║  1. <style>   樣式：顏色、版面、動畫                         ║
+ ║  2. <body>    頁面骨架：導覽列、各區塊（內容由程式自動填入） ║
+ ║  3. <script>  ★設定區（貼網址就在這裡）＋ 功能程式           ║
+ ║                                                              ║
+ ║  要貼網址、換文字、換圖片：只需要找「設定區」，其他不用動。  ║
+ ║  設定區在檔案下半部，搜尋「設定區」就能找到。                ║
+ ╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><!-- 手機版自動縮放 -->
+<meta name="color-scheme" content="light dark">
+<title>個人網頁</title><!-- 瀏覽器分頁標題；實際會被設定區的 name 取代 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet"><!-- 網頁字體 -->
+<script>document.documentElement.classList.add('js')</script><!-- 標記「有 JavaScript」，捲動動畫才會啟用（沒有 JS 時內容照常顯示） -->
+<style>
+/* ===== 顏色：想改配色只改這兩組 ===== */
+:root{--bg:#fff;--soft:#E3EEF7;--mid:#B9D3E6;--ink:#23323F;--mute:#4A5B69;--red:#D92B26;--onred:#fff}
+/* bg 背景｜soft 淺天藍(卡片底)｜mid 中天藍(點綴)｜ink 主文字｜mute 次要文字｜red 亮紅(重點按鈕)｜onred 紅底上的字 */
+[data-theme=dark]{--bg:#16202A;--soft:#1F2D3A;--mid:#35506A;--ink:#E4EEF5;--mute:#A9BDCC;--red:#FF5A52;--onred:#16202A}/* 深色模式配色 */
+
+/* ===== 基本設定 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}/* 點導覽列時平滑捲動，並避開頂部固定列 */
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+p,h1,h2,h3{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}/* 用鍵盤操作時的紅色焦點框 */
+.w{max-width:1120px;margin:0 auto;padding:0 24px}/* 內容寬度容器 */
+section{padding:64px 0}
+h2{font-size:28px;margin-bottom:24px}
+.mute{color:var(--mute)}
+main{overflow-x:clip}/* 避免側滑動畫造成橫向捲軸 */
+[hidden]{display:none!important}/* 讓「隱藏」的元素真的消失（切換畫作/文章分頁需要） */
+
+/* ===== 按鈕 ===== */
+.btn{font:inherit;display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;border:0;border-radius:999px;background:var(--soft);color:var(--ink);cursor:pointer;text-decoration:none;
+ transition:transform .2s ease,background .2s ease,filter .2s ease}
+.btn:hover{background:var(--mid);transform:scale(1.06)}/* ★滑鼠移上去微幅放大（想放更大把 1.06 調高） */
+.btn:active{transform:scale(.97)}/* 按下去的回彈 */
+.btn.r{background:var(--red);color:var(--onred)}/* 亮紅按鈕 */
+.btn.r:hover{filter:brightness(1.08)}
+.btn.on{background:var(--red);color:var(--onred)}/* 分頁按鈕被選中的狀態 */
+
+/* ===== 頂部導覽列 ===== */
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--soft)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+nav{display:flex;gap:24px;align-items:center}
+nav a{text-decoration:none;padding:8px 0}
+nav a:hover{color:var(--red)}
+#menu{display:none}/* 漢堡按鈕：電腦版隱藏，手機版才出現 */
+.ic{padding:8px 12px}
+
+/* ===== 首頁（自我介紹＋頭像） ===== */
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:48px;align-items:center;padding:72px 24px}
+.hero h1{font-size:clamp(36px,6vw,56px);line-height:1.2;margin-bottom:12px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+
+/* ===== 頭像翻面 ===== */
+.av{position:relative;justify-self:center;width:280px;height:280px;perspective:900px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s ease}/* .7s = 翻轉速度 */
+.av.flipped .flip{transform:rotateY(180deg)}/* 翻到背面 */
+.face{position:absolute;inset:0;border-radius:50%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--soft)}
+.face.back{transform:rotateY(180deg);background:var(--mid)}/* 背面（第二張照片） */
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.av i{position:absolute;right:22px;bottom:26px;width:26px;height:26px;border-radius:50%;background:var(--red);z-index:2}/* 右下角的亮紅小圓點（不會跟著翻） */
+
+/* ===== 據點卡片 ===== */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:var(--soft);border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.card .btn.r{margin-top:auto}/* 按鈕固定貼在卡片底部，三張卡片按鈕才會對齊 */
+.tag{font-size:12px;padding:2px 10px;border-radius:999px;background:var(--red);color:var(--onred)}/* 「直播」小標籤 */
+
+/* ===== 作品 ===== */
+.tabs{display:flex;gap:8px;margin-bottom:20px}
+.art{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.art button{padding:0;border:0;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:var(--mid);cursor:zoom-in}/* 畫作縮圖：4:3 */
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+.post{display:block;text-decoration:none;background:var(--soft);border-radius:16px;padding:16px 22px;margin-bottom:10px}
+.post:hover{background:var(--mid)}
+.more{margin-top:24px}
+dialog{border:0;border-radius:16px;padding:0;max-width:92vw;background:var(--bg)}/* 點畫作後的放大視窗 */
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog img{display:block;max-width:92vw;max-height:86vh}
+
+/* ===== 行事曆 ===== */
+.cg{display:grid;grid-template-columns:2fr 1fr;gap:32px}/* 左：月曆　右：行程清單 */
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}/* 一週 7 欄 */
+.wd{text-align:center;font-size:13px;color:var(--mute)}
+.d{min-height:76px;border:0;border-radius:10px;background:var(--soft);padding:6px 8px;font:inherit;font-size:14px;color:var(--ink);text-align:left;cursor:pointer}
+.d.x{background:none;cursor:default}/* 月初的空白格 */
+.d.sel{outline:2px solid var(--ink)}/* 被點選的日期 */
+.d.today{box-shadow:inset 0 0 0 2px var(--red)}/* 今天 */
+.ev{display:block;margin-top:4px;font-size:12px;line-height:1.4;padding:2px 6px;border-radius:6px;background:var(--mid);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}/* 看演出標籤（藍） */
+.ev.l{background:var(--red);color:var(--onred)}/* 直播標籤（紅） */
+.li{display:flex;flex-direction:column;gap:2px}
+.li .ev{display:inline-block;align-self:flex-start;margin:0}
+
+/* ===== 匿名留言表單 ===== */
+.form{max-width:640px;padding:32px}
+.f{display:flex;flex-direction:column;gap:6px;width:100%}
+.f input,.f textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--mid);border-radius:12px;padding:12px;width:100%}
+.hp{position:absolute;left:-9999px}/* 把「機器人陷阱欄位」移出畫面（真人看不到、機器人會填） */
+footer{padding:24px 0 40px;color:var(--mute);font-size:14px}
+footer .w{display:flex;justify-content:space-between}
+
+/* ===== 捲動進場動畫：區塊從側邊滑入＋淡入 ===== */
+.js .rv{opacity:0;transform:translateX(-56px);transition:opacity .8s ease,transform .8s ease}/* 預設：從左邊滑入（-56px = 起始距離） */
+.js .rv.rv-right{transform:translateX(56px)}/* 加上 rv-right：改從右邊滑入 */
+.js .rv.in{opacity:1;transform:none}/* 捲到畫面時，程式會加上 .in，區塊就滑到定位 */
+
+/* ===== 手機版（螢幕寬度 820px 以下） ===== */
+@media(max-width:820px){
+ .hero,.cg,.g3{grid-template-columns:1fr}/* 多欄改成單欄 */
+ .hero{padding:40px 24px;text-align:center}.hero .row{justify-content:center}
+ .av{width:180px;height:180px;order:-1}/* 手機版頭像縮小並放在文字上方 */
+ .art{grid-template-columns:1fr 1fr}
+ section{padding:40px 0}
+ #menu{display:inline-flex}/* 顯示漢堡按鈕 */
+ nav{display:none;position:absolute;top:64px;left:0;right:0;background:var(--bg);flex-direction:column;align-items:stretch;gap:0;padding:8px 24px 16px;border-bottom:1px solid var(--soft)}
+ nav.open{display:flex}/* 點漢堡後展開選單 */
+ nav a{padding:12px 0}
+ .d{min-height:54px;padding:4px}
+ .ev{font-size:11px}
+ .cal{gap:4px}
+}
+
+/* ===== 深淺色切換：顏色慢慢漸變（切換時程式會暫時加上 .theme-fade） ===== */
+@media(prefers-reduced-motion:no-preference){
+ .theme-fade,.theme-fade *,.theme-fade *::before,.theme-fade *::after{
+  transition:background-color .6s ease,color .6s ease,border-color .6s ease,box-shadow .6s ease,outline-color .6s ease!important}/* .6s = 漸變時間，想更慢就調大，例如 .9s */
+}
+
+/* ===== 如果使用者在系統設定了「減少動態效果」，就關掉所有動畫（貼心設計，建議保留） ===== */
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .js .rv{opacity:1;transform:none;transition:none}
+ .btn,.flip{transition:none}
+ .btn:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 頂部導覽列（固定在最上方） ============ -->
+<header><div class="w bar">
+ <button id="menu" class="btn ic" aria-label="開啟選單" aria-expanded="false"><!-- 手機版漢堡按鈕 -->
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+ <strong id="logo"></strong><!-- 左上角的名字（來自設定區 name） -->
+ <nav id="nav"><!-- 目錄：想改名稱就改文字；href 要對應下方各區塊的 id -->
+  <a href="#top">首頁</a><a href="#hubs">據點</a><a href="#works">作品</a><a href="#cal">行事曆</a><a href="#msg">匿名留言</a></nav>
+ <button id="theme" class="btn ic" aria-label="切換深淺色"><!-- 深淺色切換鈕 -->
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+</div></header>
+
+<main id="top">
+<!-- ============ 首頁：名字、自我介紹、社群按鈕、頭像 ============ -->
+<div class="w hero rv">
+ <div><h1 id="h1"></h1><p class="mute" id="tag" style="font-size:18px;margin-bottom:20px"></p>
+  <div class="row" id="soc"></div><!-- 社群按鈕由設定區 social 自動產生 --></div>
+ <div class="av" id="av" role="button" tabindex="0" aria-label="點一下翻面，看另一張照片"></div><!-- 頭像由程式填入 -->
+</div>
+
+<!-- ============ 據點：三張卡片（由設定區 hubs 自動產生） ============ -->
+<section id="hubs"><div class="w rv rv-right"><h2>據點</h2><div class="g3" id="hubl"></div></div></section>
+
+<!-- ============ 作品：畫作 / 文章 分頁 ============ -->
+<section id="works"><div class="w rv"><h2>作品</h2>
+ <div class="tabs"><button class="btn on" id="t1">繪圖</button><button class="btn" id="t2">文章</button></div>
+ <div class="art" id="art"></div><!-- 畫作圖片牆 -->
+ <div id="posts" hidden></div><!-- 文章列表（切到「文章」分頁才顯示） -->
+ <p class="more"><a class="btn r" id="cloud" target="_blank" rel="noopener">看更多・共用雲端</a></p><!-- 連結來自設定區 cloud -->
+</div></section>
+
+<!-- ============ 出沒行事曆：左邊月曆、右邊行程清單 ============ -->
+<section id="cal"><div class="w rv rv-right"><h2>出沒行事曆</h2><div class="cg">
+ <div><div class="ch"><button class="btn ic" id="prev" aria-label="上個月">‹</button><strong id="mt" style="font-size:18px"></strong><button class="btn ic" id="next" aria-label="下個月">›</button></div>
+  <div class="cal" id="grid"></div></div>
+ <div class="card"><strong id="dt">近期行程</strong><div id="list" style="display:flex;flex-direction:column;gap:14px;width:100%"></div>
+  <p class="mute" style="font-size:14px">點月曆上的日期，可以看當天的內容。</p></div>
+</div></div></section>
+
+<!-- ============ 匿名留言 ============ -->
+<section id="msg"><div class="w rv"><div class="card form"><h2 style="margin:0">📩匿名留言</h2><p class="mute">匿名送出，不需要登入，想說什麼都可以。</p>
+ <form id="fm" style="display:contents">
+  <div class="f"><label for="m">想說的話</label><textarea id="m" rows="5" maxlength="2000" required></textarea></div><!-- 留言內容，最多 2000 字 -->
+  <div class="f"><label for="c">聯絡方式（選填，想要回覆再留）</label><input id="c" maxlength="200"></div>
+  <input class="hp" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><!-- 機器人陷阱欄位：請勿刪除 -->
+  <button class="btn r" id="send">送出</button><p id="st" role="status" style="font-size:14px"></p><!-- 送出後的提示文字 -->
+ </form>
+ <p class="mute" style="font-size:13px">非即時檢閱，請耐心等候，感謝</p></div></div></section>
+</main>
+
+<footer><div class="w"><span id="cp"></span><a href="#top">回到頂端</a></div></footer>
+<dialog id="lb"><img alt=""></dialog><!-- 畫作放大視窗 -->
+
+<script>
+/* ╔════════════════════════════════════════════════════════════════╗
+   ║                    ★★★  設定區（貼網址在這裡）  ★★★            ║
+   ║  規則：網址一律放在單引號 '' 裡面，例如  url:'https://xxx.com'  ║
+   ║  不想顯示或還沒有的項目，保持 '' 空白即可。                    ║
+   ║  圖片可放網址，或放跟 index.html 同資料夾的檔名（如 'me.jpg'）║
+   ╚════════════════════════════════════════════════════════════════╝ */
+const C={
+ // ── 基本資料 ──
+ name:'必思 Keerbisi',                 // 左上角與首頁大標題的名字
+ tagline:'🩵🥛*⁠.⁠✧',        // 名字下面那行字
+ avatar:'鋁罐必思.png',                         // ★頭像「正面」照片（網址或檔名）
+ avatar2:'大頭必思.webp',                        // ★頭像「背面」照片：點頭像會翻到這張，停 1 秒再翻回來
+
+ // ── 後端網址（Google Apps Script） ──
+ api:'https://script.google.com/macros/s/AKfycbxCaWHFKSZOG1Jo-oDn7_FeOUFSdoX7gJeJCdWqJdOORHPgWzOBhUlESu2brmvJHA-u/exec',                            // ★貼上 Apps Script 部署後的網址。填了之後行事曆與留言才會連上試算表
+                                    //   （沒填：行事曆顯示示範資料、留言無法送出）
+
+ // ── 社群平台：[顯示名稱, 圖示代號, 網址]，順序就是畫面順序 ──
+ social:[
+  ['Instagram','ig','https://www.instagram.com/tea.you000?dlrf=YmgxNnZpNndncGpr'],            // ★在最後的 '' 貼 Instagram 網址
+  ['Threads','th','https://www.threads.com/@tea.you000'],              // ★Threads 網址
+  ['YouTube','yt','https://youtube.com/@keerbisi?si=D1BhIcfDPXQS4Eqs'],              // ★YouTube 網址
+  ['Plurk','pl','https://www.plurk.com/Tea_you000']                 // ★Plurk 網址
+ ],
+
+ // ── 據點卡片：順序就是畫面順序 ──
+ hubs:[
+  {name:'🔍達康找片 Dacon.search',desc:'無論是影片名稱、談話內容、直播話題、甚至是友台客串，輸入關鍵就可以找到影片 #任何問題請至下方匿名留言回報',btn:'前往網頁',url:'https://daconsearch.vercel.app/'},                                  // ★url：達康找片網址
+  {name:'🎮文化三路二段 W3R2D',desc:'由4+6位熱愛生活與遊戲的朋友們構成，不定期進行各類遊戲直播',btn:'前往 YouTube',url:'https://www.youtube.com/@wenhua3rdrd.sec.2'},      // ★url：文化三路二段 YouTube 網址（tag 是紅色小標籤，不要可刪）
+  {name:'⛵汐嶼境 Drizzle Realm',desc:'以身心交流、生活分享為主的平台',btn:'前往 Discord',url:'https://discord.gg/QBmd5ANHhY'}                   // ★url：汐嶼境 Discord 邀請連結
+ ],                                 // name 名稱｜desc 簡介文字｜btn 按鈕上的字
+
+ // ── 畫作：src 放圖片（網址或檔名），title 是作品名稱。要增加就複製一行 ──
+ art:[
+  {src:'必思.png',title:'自設Q版'},     // ★src：第 1 張畫作
+  {src:'文三小隊人物形象設定圖.jpg',title:'文三小隊人物形象設定圖'},     // ★src：第 2 張
+  {src:'ALL.png',title:'表情符號設定集'},
+  {src:'自設合繪.webp',title:'自設合繪(右一)'},
+  {src:'',title:'委託稿件'},
+  {src:'達康演出應援圖.jpg',title:'達康S10E3應援'}
+ ],
+
+ // ── 文章：title 標題｜sum 摘要｜url 文章網址。要增加就複製一行 ──
+ posts:[
+  {title:'殘影',sum:'「影子」，是光與物體交織的痕跡，隨光線的方向反向延展，忠實地複製著物體的輪廓...',url:'https://docs.google.com/document/d/1-pce835D3bnIKLuVCow9dAeZ10RDILw4LBhFbefvNi8/edit?tab=t.svni2eo4sqnk'},   // ★url：第 1 篇文章網址
+  {title:'顏色-Part1草地',sum:'轟隆劃破天空，機腹低空掠過氧氣，壓縮窒息著綠...',url:'https://docs.google.com/document/d/1-pce835D3bnIKLuVCow9dAeZ10RDILw4LBhFbefvNi8/edit?tab=t.rbuj76t31w36'}    // ★url：第 2 篇
+ ],
+
+ // ── 「看更多」按鈕連到的共用雲端 ──
+ cloud:'https://drive.google.com/drive/folders/1xp8Gujt1X1W932a5cLIV4hQljJMRjnOh?usp=sharing'                           // ★共用雲端網址
+};
+/* ═══════════════ 以下是功能程式，一般不需要修改 ═══════════════ */
+
+const $=id=>document.getElementById(id);   // 簡寫：用 id 找頁面元素
+const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // 把特殊字元轉義，避免文字弄壞版面
+const S='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+const IC={ // 平台圖示（簡化版）。要換官方 Logo：把對應的 svg 換成官方檔案內容即可
+ ig:S+'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
+ th:S+'<path d="M17.5 9.5C16.8 6.8 14.8 5.5 12.2 5.5 8.7 5.5 6.5 8 6.5 12s2.2 6.5 5.7 6.5c2.6 0 4.5-1.2 4.5-3.2 0-2.4-2.4-3.2-4.5-3.2-1.6 0-2.6.7-2.6 1.8 0 1 .9 1.7 2.1 1.7 1.8 0 3-1.4 3-4.2"/></svg>',
+ yt:S+'<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>',
+ pl:S+'<path d="M4 5h16v11h-9l-4 4v-4H4z"/><path d="M10 8.5v5M10 9.5h2.5a1.5 1.5 0 0 1 0 3H10"/></svg>'};
+// 產生連結屬性：有網址就開新分頁；網址沒填就不跳走（避免點了跳到奇怪的地方）
+const L=(u,t)=>u?`href="${E(u)}" target="_blank" rel="noopener"`:`href="#" onclick="return false" title="${t||'尚未設定連結'}"`;
+
+/* ---------- 把設定區的資料填進頁面 ---------- */
+document.title=C.name;$('logo').textContent=C.name;$('h1').textContent=C.name;$('tag').textContent=C.tagline;
+$('cp').textContent='© '+new Date().getFullYear()+' '+C.name;                    // 頁尾版權（年份自動更新）
+const face=(src,cls)=>`<div class="face ${cls}">${src?`<img src="${E(src)}" alt="">`:''}</div>`;   // 頭像的一面
+$('av').innerHTML=`<div class="flip">${face(C.avatar,'front')}${face(C.avatar2,'back')}</div><i></i>`; // 正面＋背面＋紅點
+$('soc').innerHTML=C.social.map(s=>`<a class="btn" ${L(s[2])}>${IC[s[1]]||''}${E(s[0])}</a>`).join('');   // 社群按鈕
+$('hubl').innerHTML=C.hubs.map(h=>`<div class="card"><div class="row" style="align-items:center;gap:10px"><h3 style="font-size:22px">${E(h.name)}</h3>${h.tag?`<span class="tag">${E(h.tag)}</span>`:''}</div><p class="mute">${E(h.desc)}</p><a class="btn r" ${L(h.url)}>${E(h.btn)}</a></div>`).join(''); // 據點卡片
+$('art').innerHTML=C.art.map((a,i)=>`<button data-i="${i}" aria-label="放大：${E(a.title)}">${a.src?`<img src="${E(a.src)}" alt="${E(a.title)}" loading="lazy">`:''}</button>`).join('');  // 畫作牆
+$('posts').innerHTML=C.posts.map(p=>`<a class="post" ${L(p.url)}><strong>${E(p.title)}</strong><br><span class="mute" style="font-size:14px">${E(p.sum)}</span></a>`).join('');  // 文章列表
+$('cloud').setAttribute('href',C.cloud||'#');if(C.cloud){$('cloud').target='_blank'}  // 「看更多」連結
+
+/* ---------- 畫作：點擊放大 ---------- */
+$('art').onclick=e=>{const b=e.target.closest('button'),a=b&&C.art[b.dataset.i];if(a&&a.src){$('lb').querySelector('img').src=a.src;$('lb').showModal()}};
+$('lb').onclick=()=>$('lb').close();   // 點放大視窗任何地方就關閉
+
+/* ---------- 作品分頁：畫作 / 文章 ---------- */
+function tab(n){$('art').hidden=n==2;$('posts').hidden=n==1;$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
+$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+
+/* ---------- 頭像翻面：點一下翻到背面，停 1 秒，再翻回來 ---------- */
+const FLIP_MS=700, HOLD_MS=1000;   // 翻轉時間(要和 CSS 的 .7s 一致)｜背面停留時間（毫秒，1000 = 1 秒，想停久一點就調大）
+let flipping=false;
+function flipAvatar(){
+ if(flipping)return;flipping=true;                        // 翻的過程中忽略重複點擊
+ $('av').classList.add('flipped');                        // 翻到背面
+ setTimeout(()=>{$('av').classList.remove('flipped');     // 停留 HOLD_MS 後翻回正面
+  setTimeout(()=>flipping=false,FLIP_MS)},FLIP_MS+HOLD_MS);
+}
+$('av').onclick=flipAvatar;
+$('av').onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();flipAvatar()}};   // 鍵盤也能操作
+
+/* ---------- 捲動進場動畫：捲到哪個區塊，就讓它滑入＋淡入 ---------- */
+const rvs=document.querySelectorAll('.rv');   // 所有加了 class="rv" 的區塊
+if('IntersectionObserver' in window){
+ const io=new IntersectionObserver(es=>es.forEach(x=>{
+  if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}   // 進入畫面 → 加上 .in 觸發動畫，且只播一次
+ }),{threshold:.12});                         // 區塊出現 12% 就觸發
+ rvs.forEach(el=>io.observe(el));
+}else rvs.forEach(el=>el.classList.add('in')); // 太舊的瀏覽器：直接顯示
+
+/* ---------- 手機選單與深淺色切換 ---------- */
+$('menu').onclick=()=>{const o=$('nav').classList.toggle('open');$('menu').setAttribute('aria-expanded',o)};   // 開關漢堡選單
+$('nav').onclick=e=>{if(e.target.tagName=='A'){$('nav').classList.remove('open');$('menu').setAttribute('aria-expanded',false)}}; // 點選項後自動收起
+const root=document.documentElement;let th;try{th=localStorage.getItem('theme')}catch(e){}
+root.dataset.theme=th||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');   // 預設淺色；若訪客手機是深色模式就跟著用深色；有手動選過就記住
+let fadeTimer;                   // 切換時暫時開啟「顏色漸變」，結束後關掉，避免影響其他動畫
+$('theme').onclick=()=>{
+ root.classList.add('theme-fade');                 // 開啟漸變
+ const t=root.dataset.theme=='dark'?'light':'dark';root.dataset.theme=t;try{localStorage.setItem('theme',t)}catch(e){}
+ clearTimeout(fadeTimer);fadeTimer=setTimeout(()=>root.classList.remove('theme-fade'),700);   // 700 毫秒後關閉（要比 CSS 的 .6s 長一點）
+};
+
+/* ---------- 行事曆（資料來自 Google 試算表「行事曆」分頁：日期｜類型｜內容｜備註） ---------- */
+const T=new Date(),K=(y,m,d)=>y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');   // K：把年月日組成 2026-11-09 這種格式
+let Y=T.getFullYear(),M=T.getMonth(),EV=[],SEL=null;     // 目前顯示的年、月；全部行程；被點選的日期
+const dem=(d,t,n)=>({date:K(T.getFullYear(),T.getMonth(),d),type:t,title:n,note:'（示範資料）'});   // 示範行程產生器
+const isL=e=>e.type=='直播';                              // 類型填「直播」→ 紅色；其他（如看演出）→ 藍色
+function draw(){                                          // 畫出月曆與右側清單
+ $('mt').textContent=Y+' 年 '+(M+1)+' 月';
+ const f=new Date(Y,M,1).getDay(),n=new Date(Y,M+1,0).getDate();   // f：這個月 1 號是星期幾；n：這個月有幾天
+ let h='日一二三四五六'.split('').map(x=>`<div class="wd">${x}</div>`).join('')+'<div class="d x"></div>'.repeat(f);
+ for(let d=1;d<=n;d++){const k=K(Y,M,d),ev=EV.filter(e=>e.date==k);   // 逐日產生格子，並找出當天的行程
+  h+=`<button class="d${k==SEL?' sel':''}${k==K(T.getFullYear(),T.getMonth(),T.getDate())?' today':''}" data-k="${k}">${d}${ev.map(e=>`<span class="ev${isL(e)?' l':''}">${E(e.title||e.type)}</span>`).join('')}</button>`}
+ $('grid').innerHTML=h;
+ const t0=K(T.getFullYear(),T.getMonth(),T.getDate());
+ const ls=SEL?EV.filter(e=>e.date==SEL):EV.filter(e=>e.date>=t0).sort((a,b)=>a.date<b.date?-1:1).slice(0,4);  // 有點選日期→顯示當天；否則顯示最近 4 筆
+ $('dt').textContent=SEL?SEL.slice(5).replace('-','/')+' 的行程':'近期行程';
+ $('list').innerHTML=ls.length?ls.map(e=>`<div class="li"><span class="ev${isL(e)?' l':''}">${E(e.type)}</span><span>${SEL?'':E(e.date.slice(5).replace('-','/'))+' '}${E(e.title)}</span>${e.note?`<span class="mute" style="font-size:14px">${E(e.note)}</span>`:''}</div>`).join(''):'<p class="mute">這天沒有安排。</p>'}
+$('grid').onclick=e=>{const b=e.target.closest('.d[data-k]');if(b){SEL=SEL==b.dataset.k?null:b.dataset.k;draw()}};   // 點日期＝選取；再點一次＝取消
+$('prev').onclick=()=>{M--;if(M<0){M=11;Y--}draw()};$('next').onclick=()=>{M++;if(M>11){M=0;Y++}draw()};     // 上/下個月
+if(C.api){fetch(C.api).then(r=>r.json()).then(j=>{EV=Array.isArray(j)?j:[];draw()}).catch(()=>{$('list').innerHTML='<p class="mute">行事曆暫時讀不到，請稍後再試。</p>'})}   // 有填 api：向試算表要行程
+else EV=[dem(9,'直播','[直播主題]'),dem(14,'看演出','[演出名稱與地點]'),dem(21,'直播','[直播主題]'),dem(28,'看演出','[演出名稱與地點]')];  // 沒填 api：顯示示範資料
+draw();
+
+/* ---------- 匿名留言：送到 Google 試算表「留言」分頁 ---------- */
+$('fm').onsubmit=async e=>{e.preventDefault();const st=$('st'),b=$('send');
+ if(!C.api){st.textContent='還沒有設定留言接收網址，目前無法送出。';return}
+ let last=0;try{last=+localStorage.getItem('last')||0}catch(x){}
+ if(Date.now()-last<30000){st.textContent='請稍等一下再送出下一則。';return}   // 同一位訪客 30 秒內只能送一則（防洗版）
+ b.disabled=true;st.textContent='送出中…';
+ try{const r=await fetch(C.api,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({message:$('m').value,contact:$('c').value,hp:$('hp').value})});
+  const j=await r.json();if(!j.ok)throw 0;
+  try{localStorage.setItem('last',Date.now())}catch(x){}
+  $('m').value='';$('c').value='';st.textContent='已收到，感謝您🩵。'}   // 送出成功的提示（想改文案改這句）
+ catch(x){st.textContent='沒有送出成功，請稍後再試一次。'}
+ b.disabled=false};
+</script>
+</body>
+</html>
